@@ -1,0 +1,42 @@
+name: "Static Analysis"
+
+on:
+  push:
+    paths:
+      - .github/workflows/static-analysis.yml
+      - composer.*
+      - src/**
+      - tests/**
+
+  pull_request:
+    paths:
+      - .github/workflows/static-analysis.yml
+      - composer.*
+      - src/**
+      - tests/**
+
+jobs:
+  phpunit:
+    name: PHP ${{ matrix.php }} - ${{ matrix.stability }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.1, 8.2, 8.3, 8.4]
+        stability: [prefer-stable]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --no-suggest
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit --testdox
